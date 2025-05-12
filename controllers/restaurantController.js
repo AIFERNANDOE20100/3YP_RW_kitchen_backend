@@ -1,4 +1,6 @@
 const { auth, db } = require('../firebase/firebaseConfig');
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
 
 exports.signupRestaurant = async (req, res) => {
   const { name, email, password, phone, address } = req.body;
@@ -8,7 +10,7 @@ exports.signupRestaurant = async (req, res) => {
   }
 
   try {
-    // 1. Create Firebase Auth User
+    // Create Firebase Auth User
     const existingUser = await auth.getUserByEmail(email).catch(() => null);
     if (existingUser) {
       return res.status(400).json({ message: 'Email already in use' });
@@ -20,7 +22,7 @@ exports.signupRestaurant = async (req, res) => {
       displayName: name,
     });
 
-    // 2. Store additional info in Firestore
+    // Store additional info in Firestore
     await db.collection('restaurants').doc(userRecord.uid).set({
       name,
       email,
@@ -44,30 +46,30 @@ exports.loginRestaurant = async (req, res) => {
   }
 
   try {
-    // Step 1: Get user by email
     const user = await auth.getUserByEmail(email);
-
-    // Note: Firebase Admin SDK can't verify password. This step just checks user exists.
-    // Use Firebase Client SDK on frontend to verify credentials.
-    
-    // Step 2: Generate custom token
     const customToken = await auth.createCustomToken(user.uid);
 
     const snapshot = await db.collection("restaurants").where("email", "==", email).limit(1).get();
-
     if (snapshot.empty) {
       return res.status(404).json({ message: "Restaurant not found" });
     }
 
     const doc = snapshot.docs[0];
-    // console.log("Restaurant document ID:", doc.id);
+    const restaurantId = doc.id;
+
+    // Create restaurantToken using JWT
+    const restaurantToken = jwt.sign(
+      { restaurantId },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
+    );
 
     return res.status(200).json({
       message: 'Login successful',
       token: customToken,
+      restaurantToken,
       uid: user.uid,
       email: user.email,
-      restaurantId: doc.id,
     });
   } catch (error) {
     console.error('Login error:', error);
@@ -78,22 +80,21 @@ exports.loginRestaurant = async (req, res) => {
 // Get all employees and robots for a given restaurant
 exports.getRestaurantEntities = async (req, res) => {
   const { restaurantId } = req.params;
-  // console.log("Restaurant ID:", restaurantId);
 
   if (!restaurantId) {
     return res.status(400).json({ message: "Restaurant ID is required" });
   }
 
   try {
-    // Fetch employees
+    // Fetch employees and map only names
     const employeeSnap = await db.collection("employees")
       .where("restaurantId", "==", restaurantId).get();
-    const employees = employeeSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const employees = employeeSnap.docs.map(doc => ({ id: doc.id, name: doc.data().name }));
 
-    // Fetch robots
+    // Fetch robots and map only names
     const robotSnap = await db.collection("robots")
       .where("restaurantId", "==", restaurantId).get();
-    const robots = robotSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const robots = robotSnap.docs.map(doc => ({ id: doc.id, name: doc.data().robotName }));
 
     res.status(200).json({ employees, robots });
   } catch (error) {
@@ -101,6 +102,7 @@ exports.getRestaurantEntities = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
 
 exports.getRestaurantMenu = async (req, res) => {
   const { restaurantId } = req.params;
@@ -110,14 +112,26 @@ exports.getRestaurantMenu = async (req, res) => {
   }
 
   try {
-    const menuSnap = await db.collection('menuItems')
+    const menuSnap = await db.collection('menu')
       .where('restaurantId', '==', restaurantId)
       .get();
 
     const menuItems = menuSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    res.status(200).json({ menuItems });
+    res.status(200).json({ menu: menuItems });
   } catch (err) {
     console.error('Error fetching menu:', err);
     res.status(500).json({ message: 'Failed to fetch menu' });
+  }
+};
+
+exports.deleteMenuItem = async (req, res) => {
+  const { itemId } = req.params;
+
+  try {
+    // Delete the menu item by UID (itemId)
+    await db.collection('menu').doc(itemId).delete();
+    res.status(200).json({ message: 'Menu item deleted' });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to delete menu item' });
   }
 };

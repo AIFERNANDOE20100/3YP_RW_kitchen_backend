@@ -1,14 +1,9 @@
 const express = require("express");
 const cors = require("cors");
-const admin = require("firebase-admin");
 require("dotenv").config();
 
-// Firebase Admin SDK Initialization
-const serviceAccount = require("./firebaseServiceAccount.json");
-
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
+// Initialize Firebase Admin SDK
+require("./firebase/firebaseConfig");
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -16,19 +11,28 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// Routes
+// Route imports
+const restaurantRoutes = require("./routes/restaurantRoutes");
+const employeeRoutes = require("./routes/employeeRoutes");
+const robotRoutes = require("./routes/robotRoutes");
+const menuRoutes = require('./routes/menuRoutes');
 const authRoutes = require("./routes/authRoute");
 const orderRoutes = require("./routes/ordersRoute");
+
+// Route usage
+app.use("/api/restaurant", restaurantRoutes, menuRoutes);
+app.use("/api/employee", employeeRoutes);
+app.use("/api/robot", robotRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/orders", orderRoutes);
 
-// Optional base route for health check
+// Health check
 app.get("/", (req, res) => {
   res.send("API is running...");
 });
 
 app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
+  console.log(`Server running at http://localhost:${port}`);
 });
 
 

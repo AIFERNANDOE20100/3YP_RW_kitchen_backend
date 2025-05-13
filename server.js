@@ -16,11 +16,15 @@ const restaurantRoutes = require("./routes/restaurantRoutes");
 const employeeRoutes = require("./routes/employeeRoutes");
 const robotRoutes = require("./routes/robotRoutes");
 const menuRoutes = require('./routes/menuRoutes');
+const authRoutes = require("./routes/authRoute");
+const orderRoutes = require("./routes/ordersRoute");
 
 // Route usage
 app.use("/api/restaurant", restaurantRoutes, menuRoutes);
 app.use("/api/employee", employeeRoutes);
 app.use("/api/robot", robotRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/orders", orderRoutes);
 
 // Health check
 app.get("/", (req, res) => {
@@ -30,3 +34,5 @@ app.get("/", (req, res) => {
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });
+
+

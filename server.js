@@ -18,7 +18,9 @@ app.use(express.json());
 
 // Routes
 const authRoutes = require("./routes/authRoute");
+const orderRoutes = require("./routes/ordersRoute");
 app.use("/api/auth", authRoutes);
+app.use("/api/orders", orderRoutes);
 
 // Optional base route for health check
 app.get("/", (req, res) => {
@@ -28,3 +30,5 @@ app.get("/", (req, res) => {
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
 });
+
+

@@ -2,9 +2,9 @@ const express = require("express");
 const router = express.Router();
 const orderService = require("../services/orderService");
 
-router.get("/", async (req, res) => {
+router.get("/:restaurantId/all", async (req, res) => {
   try {
-    const orders = await orderService.getAllOrders();
+    const orders = await orderService.getAllOrders(req.params.restaurantId);
     res.status(200).json(orders);
   } catch (error) {
     console.error("Error fetching orders:", error);
@@ -12,9 +12,9 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.get("/today", async (req, res) => {
+router.get("/:restaurantId/today", async (req, res) => {
   try {
-    const orders = await orderService.getOrdersByRange("today");
+    const orders = await orderService.getOrdersByRange("today", req.params.restaurantId);
     res.status(200).json(orders);
   } catch (error) {
     console.error("Error fetching today orders:", error);
@@ -22,9 +22,9 @@ router.get("/today", async (req, res) => {
   }
 });
 
-router.get("/week", async (req, res) => {
+router.get("/:restaurantId/week", async (req, res) => {
   try {
-    const orders = await orderService.getOrdersByRange("week");
+    const orders = await orderService.getOrdersByRange("week", req.params.restaurantId);
     res.status(200).json(orders);
   } catch (error) {
     console.error("Error fetching week orders:", error);
@@ -32,9 +32,9 @@ router.get("/week", async (req, res) => {
   }
 });
 
-router.get("/month", async (req, res) => {
+router.get("/:restaurantId/month", async (req, res) => {
   try {
-    const orders = await orderService.getOrdersByRange("month");
+    const orders = await orderService.getOrdersByRange("month", req.params.restaurantId);
     res.status(200).json(orders);
   } catch (error) {
     console.error("Error fetching month orders:", error);
@@ -42,9 +42,9 @@ router.get("/month", async (req, res) => {
   }
 });
 
-router.get("/active", async (req, res) => {
+router.get("/:restaurantId/active", async (req, res) => {
   try {
-    const orders = await orderService.getActiveOrders();
+    const orders = await orderService.getActiveOrders(req.params.restaurantId);
     res.status(200).json(orders);
   } catch (error) {
     console.error("Error fetching active orders:", error);

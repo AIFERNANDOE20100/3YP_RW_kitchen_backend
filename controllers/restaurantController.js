@@ -94,7 +94,7 @@ exports.getRestaurantEntities = async (req, res) => {
     // Fetch robots and map only names
     const robotSnap = await db.collection("robots")
       .where("restaurantId", "==", restaurantId).get();
-    const robots = robotSnap.docs.map(doc => ({ id: doc.id, name: doc.data().robotName }));
+    const robots = robotSnap.docs.map(doc => ({ robotId: doc.id, name: doc.data().robotName }));
 
     res.status(200).json({ employees, robots });
   } catch (error) {

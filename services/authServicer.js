@@ -1,19 +1,16 @@
-// const { auth } = require("../firebase/firebaseConfig");
+const axios = require("axios");
+const apiKey = process.env.FIREBASE_API_KEY;
 
-// const getUserByEmail = async (email) => {
-//   return await auth.getUserByEmail(email);
-// };
+const signInWithEmailAndPassword = async (email, password) => {
+  const response = await axios.post(
+    `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${apiKey}`,
+    {
+      email,
+      password,
+      returnSecureToken: true,
+    }
+  );
+  return response.data;
+};
 
-// const createUser = async (email, password) => {
-//   return await auth.createUser({ email, password });
-// };
-
-// const generateCustomToken = async (uid) => {
-//   return await auth.createCustomToken(uid);
-// };
-
-// module.exports = {
-//   getUserByEmail,
-//   createUser,
-//   generateCustomToken,
-// };
+module.exports = { signInWithEmailAndPassword };

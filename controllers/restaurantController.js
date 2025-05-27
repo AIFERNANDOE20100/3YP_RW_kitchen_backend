@@ -1,5 +1,5 @@
 const { auth, db } = require('../firebase/firebaseConfig');
-const jwt = require('jsonwebtoken');
+const authService = require("../services/authServicer");
 require('dotenv').config();
 
 exports.signupRestaurant = async (req, res) => {
@@ -46,30 +46,18 @@ exports.loginRestaurant = async (req, res) => {
   }
 
   try {
-    const user = await auth.getUserByEmail(email);
-    const customToken = await auth.createCustomToken(user.uid);
+    const { idToken, localId } = await authService.signInWithEmailAndPassword(email, password);
 
     const snapshot = await db.collection("restaurants").where("email", "==", email).limit(1).get();
     if (snapshot.empty) {
       return res.status(404).json({ message: "Restaurant not found" });
     }
 
-    const doc = snapshot.docs[0];
-    const restaurantId = doc.id;
-
-    // Create restaurantToken using JWT
-    const restaurantToken = jwt.sign(
-      { restaurantId },
-      process.env.JWT_SECRET,
-      { expiresIn: '24h' }
-    );
-
     return res.status(200).json({
       message: 'Login successful',
-      token: customToken,
-      restaurantToken,
-      uid: user.uid,
-      email: user.email,
+      uid: localId,
+      email,
+      token: idToken,
     });
   } catch (error) {
     console.error('Login error:', error);

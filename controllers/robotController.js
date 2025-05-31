@@ -80,17 +80,18 @@ exports.robotLogin = async (req, res) => {
     }
 
     const robotDoc = querySnapshot.docs[0];
+    const robotDocId = robotDoc.id;
     const robotData = robotDoc.data();
 
     // Check password match
     if (robotData.robotPassword !== password) {
       return res.status(401).json({ message: "Invalid robot password" });
     }
-
+    console.log("Robot login successful:", robotDocId);
     // Successful login
     return res.status(200).json({
       message: "Login successful",
-      robotId: robotData.robotId,
+      robotId: robotDoc.id,
       restaurantId: robotData.restaurantId,
     });
 
@@ -131,3 +132,86 @@ exports.getRobotCredentials = async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
+
+// // Exported controller function
+// exports.connectRobot = async (req, res) => {
+//   const { robotId, restaurantId } = req.body;
+
+//   // Extract Firebase ID token from Authorization header
+//   const authHeader = req.headers.authorization;
+//   if (!authHeader || !authHeader.startsWith("Bearer ")) {
+//     return res.status(401).json({ error: "Missing or invalid Authorization header" });
+//   }
+
+//   const idToken = authHeader.split(" ")[1];
+
+//   try {
+//     // Set AWS region and temporary credentials using Cognito Identity Pool
+//     AWS.config.region = process.env.AWS_REGION;
+//     AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+//       IdentityPoolId: process.env.AWS_IDENTITY_POOL_ID,
+//       Logins: {
+//         [`securetoken.google.com/${process.env.FIREBASE_PROJECT_ID}`]: idToken,
+//       },
+//     });
+
+//     console.log("AWS credentials configured for robot connection");
+
+//     // Fetch AWS temporary credentials
+//     await new Promise((resolve, reject) => {
+//       AWS.config.credentials.get(function (err) {
+//         if (err) {
+//           console.error("Failed to get AWS credentials:", err);
+//           reject(err);
+//         } else {
+//           resolve();
+//         }
+//       });
+//     });
+
+//     const identityId = AWS.config.credentials.identityId;
+//     console.log("Fetched AWS Identity ID:", identityId);
+
+//     // Ensure the IoT policy is attached
+//     const iot = new AWS.Iot();
+//     const policyName = process.env.AWS_IOT_POLICY_NAME;
+
+//     const attachedPolicies = await iot
+//       .listAttachedPolicies({ target: identityId })
+//       .promise();
+
+//     const alreadyAttached = attachedPolicies.policies.some(
+//       (policy) => policy.policyName === policyName
+//     );
+
+//     if (!alreadyAttached) {
+//       console.log(`Attaching IoT policy ${policyName} to identity ${identityId}`);
+//       await iot
+//         .attachPolicy({
+//           policyName: policyName,
+//           target: identityId,
+//         })
+//         .promise();
+//       console.log("IoT policy attached successfully");
+//     } else {
+//       console.log("IoT policy already attached");
+//     }
+
+//     // Respond with the required robot connection details
+//     return res.status(200).json({
+//       message: "Robot connected successfully",
+//       user: {
+//         token: idToken,
+//         awsAccessKey: AWS.config.credentials.accessKeyId,
+//         awsSecretKey: AWS.config.credentials.secretAccessKey,
+//         awsSessionToken: AWS.config.credentials.sessionToken,
+//         awsRegion: process.env.AWS_REGION,
+//         awsHost: process.env.AWS_IOT_ENDPOINT,
+//         topic: `robot/${identityId}/control`,
+//       },
+//     });
+//   } catch (err) {
+//     console.error("Robot connection error:", err);
+//     return res.status(500).json({ error: "Failed to connect robot" });
+//   }
+// };

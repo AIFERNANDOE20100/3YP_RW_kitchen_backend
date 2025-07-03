@@ -8,6 +8,19 @@ exports.addMenuItem = async (req, res) => {
     return res.status(400).json({ message: "All fields are required" });
   }
 
+  const idToken = req.headers.authorization?.split('Bearer ')[1];
+  if (!idToken) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  // Verify the ID token
+  try {
+    await admin.auth().verifyIdToken(idToken);
+  } catch (error) {
+    console.error("ID token verification failed:", error);
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
   try {
     // Get the highest existing menuNumber for the restaurant
     const menuSnap = await db.collection("menu")

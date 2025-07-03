@@ -1,5 +1,6 @@
 const { auth, db } = require('../firebase/firebaseConfig');
 const authService = require("../services/authServicer");
+const admin = require('firebase-admin');
 require('dotenv').config();
 
 exports.signupRestaurant = async (req, res) => {
@@ -73,6 +74,19 @@ exports.getRestaurantEntities = async (req, res) => {
     return res.status(400).json({ message: "Restaurant ID is required" });
   }
 
+  const idToken = req.headers.authorization?.split('Bearer ')[1];
+  if (!idToken) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  // Verify the ID token
+  try {
+    await admin.auth().verifyIdToken(idToken);
+  } catch (error) {
+    console.error("ID token verification failed:", error);
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
   try {
     // Fetch employees and map only names
     const employeeSnap = await db.collection("employees")
@@ -99,6 +113,39 @@ exports.getRestaurantMenu = async (req, res) => {
     return res.status(400).json({ message: 'Restaurant ID is required' });
   }
 
+  const idToken = req.headers.authorization?.split('Bearer ')[1];
+  if (!idToken) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+
+  // Verify the ID token
+  try {
+    await admin.auth().verifyIdToken(idToken);
+  } catch (error) {
+    console.error("ID token verification failed:", error);
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+
+  try {
+    const menuSnap = await db.collection('menu')
+      .where('restaurantId', '==', restaurantId)
+      .get();
+
+    const menuItems = menuSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    res.status(200).json({ menu: menuItems });
+  } catch (err) {
+    console.error('Error fetching menu:', err);
+    res.status(500).json({ message: 'Failed to fetch menu' });
+  }
+};
+
+exports.getRestaurantMenuRobot = async (req, res) => {
+  const { restaurantId } = req.params;
+
+  if (!restaurantId) {
+    return res.status(400).json({ message: 'Restaurant ID is required' });
+  }
+
   try {
     const menuSnap = await db.collection('menu')
       .where('restaurantId', '==', restaurantId)
@@ -114,6 +161,19 @@ exports.getRestaurantMenu = async (req, res) => {
 
 exports.deleteMenuItem = async (req, res) => {
   const { itemId } = req.params;
+
+  const idToken = req.headers.authorization?.split('Bearer ')[1];
+  if (!idToken) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+
+  // verify the ID token
+  try {
+    await admin.auth().verifyIdToken(idToken);
+  } catch (error) {
+    console.error("ID token verification failed:", error);
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
 
   try {
     // Delete the menu item by UID (itemId)

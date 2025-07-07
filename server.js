@@ -1,3 +1,5 @@
+const fs = require('fs');
+const https = require('https');
 const express = require("express");
 const cors = require("cors");
 const WebSocket = require('ws');
@@ -9,6 +11,7 @@ require("dotenv").config();
 require("./firebase/firebaseConfig");
 const { db } = require("./firebase/firebaseConfig"); // Make sure to export db from firebaseConfig
 const admin = require('firebase-admin');
+
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -29,18 +32,30 @@ app.use("/api/employee", employeeRoutes);
 app.use("/api/robot", robotRoutes);
 app.use("/api/orders", orderRoutes);
 
+
 // Health check
 app.get("/", (req, res) => {
   res.send("API is running...");
 });
 
-// Create HTTP server
-const server = app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
+// Load SSL cert and key
+const privateKey = fs.readFileSync('./cert/567ac5f9b0348408455bfc91506042fe17270e042a0499705711a24c5c7a6883-private.pem.key', 'utf8');
+const certificate = fs.readFileSync('./cert/567ac5f9b0348408455bfc91506042fe17270e042a0499705711a24c5c7a6883-certificate.pem.crt', 'utf8');
+const ca = fs.readFileSync('./cert/AmazonRootCA1.pem', 'utf8');
+
+const credentials = { key: privateKey, cert: certificate, ca: ca };
+
+// Create HTTPS server
+const httpsServer = https.createServer(credentials, app);
+
+// Start HTTPS server
+httpsServer.listen(port, () => {
+  console.log(`HTTPS Server running at https://localhost:${port}`);
 });
 
+
 // WebSocket server setup
-const wss = new WebSocket.Server({ server });
+const wss = new WebSocket.Server({ server: httpsServer });
 const connections = new Map();
 
 // Function to process idToken and generate authentication credentials

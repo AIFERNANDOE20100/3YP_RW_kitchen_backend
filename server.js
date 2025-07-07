@@ -16,11 +16,7 @@ const admin = require('firebase-admin');
 const app = express();
 const port = process.env.PORT || 3000;
 
-// CORS setup to allow frontend domain
-app.use(cors({
-  origin: 'https://restaurant-interface.duckdns.org',
-  credentials: true
-}));
+app.use(cors());
 app.use(express.json());
 
 // Route imports

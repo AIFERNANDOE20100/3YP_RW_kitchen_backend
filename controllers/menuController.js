@@ -1,4 +1,7 @@
-const { db } = require('../firebase/firebaseConfig');
+const { auth, db } = require('../firebase/firebaseConfig');
+const authService = require("../services/authServicer");
+const admin = require('firebase-admin');
+require('dotenv').config();
 
 // POST /api/restaurant/:restaurantId/add-menu
 exports.addMenuItem = async (req, res) => {

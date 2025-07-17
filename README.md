@@ -1,17 +1,66 @@
-Overview
-The Kitchen Backend is a RESTful API service designed to manage kitchen operations, including inventory, orders, recipes, and staff management. It provides a robust and scalable backend solution for kitchen management systems, enabling seamless integration with frontend applications or other services.
+# Kitchen Backend - Order API
 
-Features
-Manage kitchen inventory (ingredients, supplies)
+## Overview
+This module provides RESTful API endpoints to fetch order details for restaurants. It supports retrieving all orders, as well as filtering orders by specific time ranges (today, week, month) and active status.
 
-Handle orders and track their status
+## Features
+- Retrieve all orders for a given restaurant
+- Retrieve orders placed today, this week, or this month
+- Retrieve active orders currently being processed
+- Returns responses in JSON format for easy integration
+- Includes proper error handling with appropriate status codes
 
-CRUD operations for recipes and menu items
+## API Endpoints
 
-Staff management and role-based access control
+### Get All Orders
+- Method: `GET`
+- Path: `/:restaurantId/all`
+- Description: Returns all orders for the specified restaurant.
+- Parameters:
+  - `restaurantId` (string) — Unique identifier of the restaurant.
+- Response: JSON array of order objects.
 
-Real-time order updates
+### Get Today's Orders
+- Method: `GET`
+- Path: `/:restaurantId/today`
+- Description: Returns orders placed today for the specified restaurant.
+- Parameters:
+  - `restaurantId` (string)
+- Response: JSON array of order objects.
 
-Secure API endpoints with authentication and authorization
+### Get This Week's Orders
+- Method: `GET`
+- Path: `/:restaurantId/week`
+- Description: Returns orders placed within the current week.
+- Parameters:
+  - `restaurantId` (string)
+- Response: JSON array of order objects.
 
-Integration ready for mobile and web apps
+### Get This Month's Orders
+- Method: `GET`
+- Path: `/:restaurantId/month`
+- Description: Returns orders placed within the current month.
+- Parameters:
+  - `restaurantId` (string)
+- Response: JSON array of order objects.
+
+### Get Active Orders
+- Method: `GET`
+- Path: `/:restaurantId/active`
+- Description: Returns active orders currently being processed.
+- Parameters:
+  - `restaurantId` (string)
+- Response: JSON array of order objects.
+
+## Error Handling
+- In case of any server-side error, responses will return an HTTP status code `500` along with a JSON object containing an error message relevant to the requested endpoint.
+
+## Setup & Usage
+1. Implement the `orderService` module with the following methods:
+   - `getAllOrders(restaurantId)`
+   - `getOrdersByRange(range, restaurantId)` — where `range` is `"today"`, `"week"`, or `"month"`
+   - `getActiveOrders(restaurantId)`
+2. Import and use the router in your Express application:
+   ```js
+   const ordersRouter = require('./routes/orders');
+   app.use('/api/orders', ordersRouter);

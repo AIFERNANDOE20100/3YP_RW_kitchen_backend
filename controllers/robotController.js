@@ -47,6 +47,7 @@ exports.signupRobot = async (req, res) => {
       robotId,
       robotPassword,
       restaurantId,
+      status: "offline", // Default status
       createdAt: new Date().toISOString(),
     });
 

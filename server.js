@@ -168,12 +168,12 @@ wss.on('connection', (ws, req) => {
 // AWS IoT setup
 const device = awsIot.device({
   keyPath:
-    "./cert/567ac5f9b0348408455bfc91506042fe17270e042a0499705711a24c5c7a6883-private.pem.key",
+    "cert_exhibit/1c0e76c62d58f716b82ae99a257860aa55b29e4aea5470b92c3eefcea8daae3b-private.pem.key",
   certPath:
-    "./cert/567ac5f9b0348408455bfc91506042fe17270e042a0499705711a24c5c7a6883-certificate.pem.crt",
-  caPath: "./cert/AmazonRootCA1.pem",
+    "./cert_exhibit/1c0e76c62d58f716b82ae99a257860aa55b29e4aea5470b92c3eefcea8daae3b-certificate.pem.crt",
+  caPath: "./cert_exhibit/AmazonRootCA1.pem",
   clientId: `myNodeSubscriber-${Date.now()}`,
-  host: "a2cdp9hijgdiig-ats.iot.ap-southeast-2.amazonaws.com",
+  host: "a2xhp106oe6s98-ats.iot.ap-southeast-2.amazonaws.com",
 });
 
 // MQTT connection handlers
